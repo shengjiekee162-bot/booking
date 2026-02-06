@@ -102,8 +102,8 @@ $conn->close();
                 <strong>⏰ 营业时间 / Business Hours:</strong><br>
                 我们的营业时间是每天 <strong>10:00 AM - 10:00 PM (22:00)</strong><br>
                 We are open daily from <strong>10:00 AM to 10:00 PM</strong><br>
-                <small style="margin-top: 5px; display: block;">📅 预订时间：11:00 AM - 9:45 PM (21:45 - Last Call) / Booking: 11:00 AM - 9:45 PM (Last Call)<br>
-                🍽️ 点餐(Order)：11:00 AM - 9:45 PM (21:45 - Last Call)</small>
+                <small style="margin-top: 5px; display: block;">📅 预订时间：11:00 AM - 9:30 PM (21:30 - Last Call) / Booking: 11:00 AM - 9:30 PM (Last Call)<br>
+                🍽️ 点餐(Order)：11:00 AM - 9:30 PM (21:30 - Last Call)</small>
             </div>
             
             <form action="process_booking.php" method="POST" id="bookingForm">
@@ -148,10 +148,10 @@ $conn->close();
                     <div class="col">
                         <div class="form-group">
                             <label for="booking_time">预订时间 / Booking Time *</label>
-                            <input type="time" id="booking_time" name="booking_time" required min="11:00" max="21:45">
+                            <input type="time" id="booking_time" name="booking_time" required min="11:00" max="21:30">
                             <small style="color: #667eea; display: block; margin-top: 5px;">
-                                ⏰ 餐厅营业：10:00 - 22:00 | 预订时间：11:00 - 21:45 (Last Call)<br>
-                                ⏰ Restaurant: 10:00 AM - 10:00 PM | Booking: 11:00 AM - 9:45 PM (Last Call)
+                                ⏰ 餐厅营业：10:00 - 22:00 | 预订时间：11:00 - 21:30 (Last Call)<br>
+                                ⏰ Restaurant: 10:00 AM - 10:00 PM | Booking: 11:00 AM - 9:30 PM (Last Call)
                             </small>
                         </div>
                     </div>
@@ -416,17 +416,17 @@ $conn->close();
                 return;
             }
             
-            // Validate booking time (must be between 11:00 and 21:45)
+            // Validate booking time (must be between 11:00 and 21:30)
             const bookingTime = document.getElementById('booking_time').value;
             if (bookingTime) {
                 const [hours, minutes] = bookingTime.split(':').map(Number);
                 const timeInMinutes = hours * 60 + minutes;
                 const startTime = 11 * 60; // 11:00
-                const endTime = 21 * 60 + 45; // 21:45 (Last Call)
+                const endTime = 21 * 60 + 30; // 21:30 (Last Call)
                 
                 if (timeInMinutes < startTime || timeInMinutes > endTime) {
                     e.preventDefault();
-                    alert('预订时间必须在 11:00 - 21:45 之间 (Last Call)\nBooking time must be between 11:00 AM - 9:45 PM (Last Call)');
+                    alert('预订时间必须在 11:00 - 21:30 之间 (Last Call)\nBooking time must be between 11:00 AM - 9:30 PM (Last Call)');
                     return;
                 }
             }

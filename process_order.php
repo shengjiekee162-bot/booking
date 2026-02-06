@@ -7,14 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Check if current time is after 21:45 (9:45 PM)
+// Check if current time is after 21:30 (9:30 PM)
 $current_hour = intval(date('H'));
 $current_minute = intval(date('i'));
 $current_time_in_minutes = $current_hour * 60 + $current_minute;
-$cutoff_time = 21 * 60 + 45; // 21:45 (9:45 PM)
+$cutoff_time = 21 * 60 + 30; // 21:30 (9:30 PM)
 
 if ($current_time_in_minutes > $cutoff_time) {
-    $_SESSION['error_message'] = "抱歉，我们在 9:45 PM (21:45) 之后停止接收食品订单。/ Sorry, we stop taking food orders after 9:45 PM (21:45).";
+    $_SESSION['error_message'] = "抱歉，我们在 9:30 PM (21:30) 之后停止接收食品订单。/ Sorry, we stop taking food orders after 9:30 PM (21:30).";
     $booking_id = intval($_POST['booking_id']);
     header('Location: menu.php?booking_id=' . $booking_id);
     exit;

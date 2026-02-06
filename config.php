@@ -23,6 +23,6 @@ date_default_timezone_set('Asia/Kuala_Lumpur');
 // Business hours configuration
 define('RESTAURANT_OPEN_TIME', '10:00');  // 餐厅开门时间 / Restaurant opens
 define('BOOKING_START_TIME', '11:00');    // 预订开始时间 / Booking start time
-define('BOOKING_END_TIME', '21:45');      // 预订结束时间 / Booking end time (Last Call)
+define('BOOKING_END_TIME', '21:30');      // 预订结束时间 / Booking end time (Last Call)
 define('RESTAURANT_CLOSE_TIME', '22:00'); // 餐厅关门时间 / Restaurant closes
 ?>

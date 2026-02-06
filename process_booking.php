@@ -50,16 +50,16 @@ if ($booking_datetime < time()) {
     $errors[] = "预订时间不能早于现在 / Booking time cannot be in the past";
 }
 
-// Validate business hours (11:00 - 21:45 Last Call)
+// Validate business hours (11:00 - 21:30 Last Call)
 $time_parts = explode(':', $booking_time);
 $booking_hour = intval($time_parts[0]);
 $booking_minute = intval($time_parts[1]);
 $booking_time_in_minutes = $booking_hour * 60 + $booking_minute;
 $start_time = 11 * 60; // 11:00
-$end_time = 21 * 60 + 45; // 21:45 (Last Call)
+$end_time = 21 * 60 + 30; // 21:30 (Last Call)
 
 if ($booking_time_in_minutes < $start_time || $booking_time_in_minutes > $end_time) {
-    $errors[] = "预订时间必须在营业时间内 (11:00 - 21:45 Last Call) / Booking time must be within business hours (11:00 AM - 9:45 PM Last Call)";
+    $errors[] = "预订时间必须在营业时间内 (11:00 - 21:30 Last Call) / Booking time must be within business hours (11:00 AM - 9:30 PM Last Call)";
 }
 
 // Check if there are any validation errors so far
