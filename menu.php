@@ -2,6 +2,23 @@
 session_start();
 require_once 'config.php';
 
+// 确保session中有is_admin变量 / Ensure is_admin is in session
+if (isset($_SESSION['user_id'])) {
+    // 如果session中没有is_admin，从数据库中读取 / If is_admin not in session, fetch from database
+    if (!isset($_SESSION['is_admin'])) {
+        $conn = getDBConnection();
+        $stmt = $conn->prepare("SELECT is_admin FROM users WHERE id = ?");
+        $stmt->bind_param("i", $_SESSION['user_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            $_SESSION['is_admin'] = $user['is_admin'] ? true : false;
+        }
+        $conn->close();
+    }
+}
+
 // Get booking ID from session or query parameter
 $booking_id = isset($_GET['booking_id']) ? intval($_GET['booking_id']) : (isset($_SESSION['booking_id']) ? $_SESSION['booking_id'] : null);
 
@@ -23,7 +40,39 @@ foreach ($menu_items as $item) {
     $grouped_menu[$item['category']][] = $item;
 }
 
-$conn->close();
+// Check if current time allows ordering based on booking time
+$is_ordering_closed = false;
+$booking_time = null;
+$cutoff_time_str = null;
+
+if ($booking_id) {
+    // Fetch booking details to get booking time
+    $stmt = $conn->prepare("
+        SELECT b.booking_date, b.booking_time 
+        FROM bookings b 
+        WHERE b.id = ?
+    ");
+    $stmt->bind_param("i", $booking_id);
+    $stmt->execute();
+    $booking_result = $stmt->get_result();
+    
+    if ($booking_result->num_rows > 0) {
+        $booking = $booking_result->fetch_assoc();
+        $booking_datetime = $booking['booking_date'] . ' ' . $booking['booking_time'];
+        $booking_timestamp = strtotime($booking_datetime);
+        
+        // Calculate cutoff time: booking time minus 1 hour 15 minutes
+        $cutoff_timestamp = $booking_timestamp - (1 * 60 * 60 + 15 * 60); // 1 hour 15 minutes
+        $current_timestamp = time();
+        
+        // If current time is after cutoff time, ordering is closed
+        $is_ordering_closed = $current_timestamp > $cutoff_timestamp;
+        
+        // Format cutoff time for display
+        $cutoff_time_str = date('H:i', $cutoff_timestamp);
+        $booking_time = date('H:i', $booking_timestamp);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="zh">
@@ -44,7 +93,7 @@ $conn->close();
             <a href="index.php">预订餐桌 Booking</a>
             <a href="menu.php" class="active">提前点餐 Pre-Order</a>
             <a href="view_booking.php">查看预订 View Booking</a>
-            <a href="admin.php">管理后台 Admin</a>
+            <a href="admin.php">Admin</a>
             <a href="history.php">历史记录 History</a>
         </div>
         
@@ -53,6 +102,9 @@ $conn->close();
                 <div class="user-info">
                     <span class="user-welcome">👤 欢迎, <?php echo htmlspecialchars($_SESSION['user_name']); ?> / Welcome</span>
                     <a href="my_bookings.php" class="user-link">我的预订 My Bookings</a>
+                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                        <a href="admin.php" class="user-link" style="background: #dc3545; color: white;">⚙️ 管理后台 Admin Panel</a>
+                    <?php endif; ?>
                     <a href="logout.php" class="user-link logout">登出 Logout</a>
                 </div>
             <?php else: ?>
@@ -88,7 +140,16 @@ $conn->close();
                 </div>
             <?php endif; ?>
             
-            <form action="process_order.php" method="POST" id="orderForm">
+            <?php if ($is_ordering_closed): ?>
+                <div class="alert alert-error" style="background: #ffebee; border: 2px solid #f44336; color: #c62828;">
+                    <h3 style="margin-top: 0; color: #c62828;">❌ 点餐已超时 / Ordering Deadline Passed</h3>
+                    <p>抱歉，预订时间为 <?php echo $booking_time; ?>，点餐截止时间是 <?php echo $cutoff_time_str; ?>。</p>
+                    <p>Sorry, your booking time is <?php echo $booking_time; ?>, and the deadline to order was <?php echo $cutoff_time_str; ?>.</p>
+                    <p><strong>您可以在预订前 1 小时 15 分钟内点餐 / You can order up to 1 hour 15 minutes before your booking time</strong></p>
+                </div>
+            <?php endif; ?>
+            
+            <form action="process_order.php" method="POST" id="orderForm" <?php echo $is_ordering_closed ? 'style="opacity: 0.5; pointer-events: none;"' : ''; ?>>
                 <input type="hidden" name="booking_id" value="<?php echo $booking_id; ?>">
                 
                 <?php foreach ($grouped_menu as $category => $items): ?>

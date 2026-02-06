@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $conn = getDBConnection();
         
-        $stmt = $conn->prepare("SELECT id, email, password, name, phone FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT id, email, password, name, phone, is_admin FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_phone'] = $user['phone'];
+                $_SESSION['is_admin'] = $user['is_admin'] ? true : false;
                 
                 // Update last login
                 $stmt = $conn->prepare("UPDATE users SET last_login = NOW() WHERE id = ?");
@@ -70,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="index.php">预订餐桌 Booking</a>
             <a href="menu.php">提前点餐 Pre-Order</a>
             <a href="view_booking.php">查看预订 View Booking</a>
-            <a href="admin.php">管理后台 Admin</a>
             <a href="history.php">历史记录 History</a>
         </div>
         

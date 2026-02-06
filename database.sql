@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
+    is_admin BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL
 );
@@ -94,6 +95,10 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (order_id) REFERENCES food_orders(id) ON DELETE CASCADE,
     FOREIGN KEY (food_item_id) REFERENCES food_menu(id) ON DELETE CASCADE
 );
+
+-- Insert admin user
+INSERT INTO users (email, password, name, phone, is_admin) VALUES
+('admin@restaurant.com', '$2y$12$RLyNewQGSxOHXxdc6iWQAuSlj15w0FMO9GVrRBi64f87oHdh69PI', 'Administrator', '6012345678', 1);
 
 -- Insert sample food menu items
 INSERT INTO food_menu (name, description, category, price, available) VALUES

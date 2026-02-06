@@ -73,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="index.php">预订餐桌 Booking</a>
             <a href="menu.php">提前点餐 Pre-Order</a>
             <a href="view_booking.php">查看预订 View Booking</a>
-            <a href="admin.php">管理后台 Admin</a>
             <a href="history.php">历史记录 History</a>
         </div>
         

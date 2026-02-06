@@ -2,6 +2,23 @@
 session_start();
 require_once 'config.php';
 
+// 确保session中有is_admin变量 / Ensure is_admin is in session
+if (isset($_SESSION['user_id'])) {
+    // 如果session中没有is_admin，从数据库中读取 / If is_admin not in session, fetch from database
+    if (!isset($_SESSION['is_admin'])) {
+        $conn = getDBConnection();
+        $stmt = $conn->prepare("SELECT is_admin FROM users WHERE id = ?");
+        $stmt->bind_param("i", $_SESSION['user_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            $user = $result->fetch_assoc();
+            $_SESSION['is_admin'] = $user['is_admin'] ? true : false;
+        }
+        $conn->close();
+    }
+}
+
 // Fetch available tables
 $conn = getDBConnection();
 $sql = "SELECT * FROM tables WHERE available = TRUE ORDER BY table_number";
@@ -27,13 +44,16 @@ $conn->close();
         <div class="header">
             <h1>🍽️ 餐厅预订系统</h1>
             <p>Restaurant Booking & Pre-Order System</p>
+            <div style="position: absolute; top: 20px; right: 20px;">
+                <a href="admin.php" class="btn btn-primary">⚙️ Admin</a>
+            </div>
         </div>
         
         <div class="nav">
             <a href="index.php" class="active">预订餐桌 Booking</a>
             <a href="menu.php">提前点餐 Pre-Order</a>
             <a href="view_booking.php">查看预订 View Booking</a>
-            <a href="admin.php">管理后台 Admin</a>
+            <a href="admin.php">Admin</a>
             <a href="history.php">历史记录 History</a>
         </div>
         
@@ -42,6 +62,9 @@ $conn->close();
                 <div class="user-info">
                     <span class="user-welcome">👤 欢迎, <?php echo htmlspecialchars($_SESSION['user_name']); ?> / Welcome</span>
                     <a href="my_bookings.php" class="user-link">我的预订 My Bookings</a>
+                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                        <a href="admin.php" class="user-link" style="background: #dc3545; color: white;">⚙️ 管理后台 Admin Panel</a>
+                    <?php endif; ?>
                     <a href="logout.php" class="user-link logout">登出 Logout</a>
                 </div>
             <?php else: ?>
@@ -79,7 +102,8 @@ $conn->close();
                 <strong>⏰ 营业时间 / Business Hours:</strong><br>
                 我们的营业时间是每天 <strong>10:00 AM - 10:00 PM (22:00)</strong><br>
                 We are open daily from <strong>10:00 AM to 10:00 PM</strong><br>
-                <small style="margin-top: 5px; display: block;">📅 预订时间：11:00 AM - 9:45 PM (21:45 - Last Call) / Booking: 11:00 AM - 9:45 PM (Last Call)</small>
+                <small style="margin-top: 5px; display: block;">📅 预订时间：11:00 AM - 9:45 PM (21:45 - Last Call) / Booking: 11:00 AM - 9:45 PM (Last Call)<br>
+                🍽️ 点餐(Order)：11:00 AM - 9:45 PM (21:45 - Last Call)</small>
             </div>
             
             <form action="process_booking.php" method="POST" id="bookingForm">

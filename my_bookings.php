@@ -8,6 +8,20 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// 确保session中有is_admin变量 / Ensure is_admin is in session
+if (!isset($_SESSION['is_admin'])) {
+    $conn = getDBConnection();
+    $stmt = $conn->prepare("SELECT is_admin FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        $_SESSION['is_admin'] = $user['is_admin'] ? true : false;
+    }
+    $conn->close();
+}
+
 $user_id = $_SESSION['user_id'];
 
 // Fetch user's bookings
@@ -56,7 +70,7 @@ $conn->close();
             <a href="index.php">预订餐桌 Booking</a>
             <a href="menu.php">提前点餐 Pre-Order</a>
             <a href="view_booking.php">查看预订 View Booking</a>
-            <a href="admin.php">管理后台 Admin</a>
+            <a href="admin.php">Admin</a>
             <a href="history.php">历史记录 History</a>
         </div>
         
@@ -64,6 +78,9 @@ $conn->close();
             <div class="user-info">
                 <span class="user-welcome">👤 欢迎, <?php echo htmlspecialchars($_SESSION['user_name']); ?> / Welcome</span>
                 <a href="my_bookings.php" class="user-link" style="background: #4CAF50;">我的预订 My Bookings</a>
+                <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                    <a href="admin.php" class="user-link" style="background: #dc3545; color: white;">⚙️ 管理后台 Admin Panel</a>
+                <?php endif; ?>
                 <a href="logout.php" class="user-link logout">登出 Logout</a>
             </div>
         </div>

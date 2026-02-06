@@ -2,7 +2,9 @@
 /**
  * 数据库迁移脚本 / Database Migration Script
  * 为customers表添加user_id列（如果不存在）
+ * 为users表添加is_admin列（如果不存在）
  * Adds user_id column to customers table if it doesn't exist
+ * Adds is_admin column to users table if it doesn't exist
  */
 
 require_once 'config.php';
@@ -39,12 +41,29 @@ try {
             echo "⚠️ 外键可能已存在 / Foreign key may already exist (this is okay)\n";
         }
         
-        echo "\n✅ 数据库迁移完成！/ Database migration completed!\n";
-        echo "您现在可以进行预订了。/ You can now make bookings.\n";
-        
     } else {
         echo "✅ user_id 列已存在，无需迁移 / user_id column already exists, no migration needed\n";
     }
+    
+    // Check if is_admin column exists in users table
+    $check_admin = $conn->query("SHOW COLUMNS FROM users LIKE 'is_admin'");
+    
+    if ($check_admin->num_rows === 0) {
+        echo "\n⏳ 添加管理员标记列... / Adding is_admin column...\n";
+        
+        // Add is_admin column
+        $add_admin = "ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE";
+        if ($conn->query($add_admin) === TRUE) {
+            echo "✅ is_admin 列添加成功 / is_admin column added successfully\n";
+        } else {
+            echo "❌ 错误 / Error: " . $conn->error . "\n";
+            exit(1);
+        }
+    } else {
+        echo "✅ is_admin 列已存在 / is_admin column already exists\n";
+    }
+    
+    echo "\n✅ 数据库迁移完成！/ Database migration completed!\n";
     
     $conn->close();
     
